@@ -74,19 +74,45 @@ const ResultsPage = () => {
     setData(res);
   }, []);
 
-  const getResults = (func) => {
+  const getSortedTraits = (func) => {
     const arr = ["D", "I", "S", "C"];
     arr.sort(func);
-    return [full[arr[0]], full[arr[1]]];
+    return arr;
   };
 
   const getCharacter = () => {
     const curr = getData();
-    const arr = ["D", "I", "S", "C"];
-    const val = (key) => curr[key][0] - curr[key][1];
-
-    arr.sort((a, b) => val(b) - val(a));
+    const arr = getSortedTraits((a, b) => {
+      const val = (key) => curr[key][0] - curr[key][1];
+      return val(b) - val(a);
+    });
     return arr[0] + "/" + arr[1];
+  };
+
+  const mostTraits = getSortedTraits((a, b) => {
+    const curr = getData();
+    return curr[b][0] - curr[a][0];
+  });
+
+  const leastTraits = getSortedTraits((a, b) => {
+    const curr = getData();
+    return curr[a][1] - curr[b][1];
+  });
+
+  const topMost = mostTraits.slice(0, 2).map((k) => full[k]);
+  const topLeast = leastTraits.slice(0, 2).map((k) => full[k]);
+
+  const common = topLeast.filter((t) => topMost.includes(t));
+  const uncommon = topLeast.filter((t) => !topMost.includes(t));
+
+  const formatList = (list) => {
+    if (list.length === 0) return null;
+    if (list.length === 1) return <b>{list[0]}</b>;
+    return (
+      <>
+        <b>{list[0]}</b> and <b>{list[1]}</b>
+      </>
+    );
   };
 
   return (
@@ -119,25 +145,7 @@ const ResultsPage = () => {
 
                 <p className="px-8">
                   Your analysis highlights that you are most likely to lead with
-                  a{" "}
-                  <b>
-                    {
-                      getResults((a, b) => {
-                        const curr = getData();
-                        return curr[b][0] - curr[a][0];
-                      })[0]
-                    }
-                  </b>{" "}
-                  and{" "}
-                  <b>
-                    {
-                      getResults((a, b) => {
-                        const curr = getData();
-                        return curr[b][0] - curr[a][0];
-                      })[1]
-                    }
-                  </b>{" "}
-                  approach.
+                  a {formatList(topMost)} approach.
                 </p>
               </div>
             )}
@@ -158,27 +166,20 @@ const ResultsPage = () => {
                   </div>
                 </div>
 
-                <p className="px-8">
-                  Your profile suggests that{" "}
-                  <b>
-                    {
-                      getResults((a, b) => {
-                        const curr = getData();
-                        return curr[a][1] - curr[b][1];
-                      })[0]
-                    }
-                  </b>{" "}
-                  and{" "}
-                  <b>
-                    {
-                      getResults((a, b) => {
-                        const curr = getData();
-                        return curr[a][1] - curr[b][1];
-                      })[1]
-                    }
-                  </b>{" "}
-                  is not a primary driver in your current behavioral toolkit.
-                </p>
+                <div className="px-8 space-y-2">
+                  {common.length > 0 && (
+                    <p>
+                      This underscores the consistency of {formatList(common)}{" "}
+                      that remains constant to the change of situation.
+                    </p>
+                  )}
+                  {uncommon.length > 0 && (
+                    <p>
+                      It also shows {formatList(uncommon)} identifies as your
+                      least character essence that changes with incidents.
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
@@ -205,41 +206,31 @@ const ResultsPage = () => {
 
               <p className="px-8">
                 Based on the results, your profile leans heavily toward{" "}
-                <b>
-                  {
-                    getResults((a, b) => {
-                      const curr = getData();
-                      const val = (key) => curr[key][0] - curr[key][1];
-                      return val(b) - val(a);
-                    })[0]
-                  }
-                </b>{" "}
-                traits, while{" "}
-                <b>
-                  {
-                    getResults((a, b) => {
-                      const curr = getData();
-                      const val = (key) => curr[key][0] - curr[key][1];
-                      return val(b) - val(a);
-                    })[1]
-                  }
-                </b>{" "}
-                behaviors are least prominent.
+                <b>{full[getSortedTraits((a, b) => {
+                  const curr = getData();
+                  const val = (key) => curr[key][0] - curr[key][1];
+                  return val(b) - val(a);
+                })[0]]}</b> traits, while{" "}
+                <b>{full[getSortedTraits((a, b) => {
+                  const curr = getData();
+                  const val = (key) => curr[key][0] - curr[key][1];
+                  return val(b) - val(a);
+                })[3]]}</b> behaviors are least prominent.
               </p>
             </div>
           </div>
-            
-            <div className="flex justify-center">
 
-          <div
-            onClick={() => {
-              navigate("/#home");
-            }}
-            className="w-fit border select-none rounded-md text-center px-10 py-1 hover:bg-teal-500 hover:text-white cursor-pointer duration-200 mb-12"
+          <div className="flex justify-center">
+
+            <div
+              onClick={() => {
+                navigate("/#home");
+              }}
+              className="w-fit border select-none rounded-md text-center px-10 py-1 hover:bg-teal-500 hover:text-white cursor-pointer duration-200 mb-12"
             >
-            Back to Home
-          </div>
+              Back to Home
             </div>
+          </div>
           <Lines direction={"right"} />
         </div>
       </div>
